@@ -4,19 +4,36 @@ import dayjs from "dayjs";
 
 
 export async function getRentals(req, res) {
-    const customerId = req.query.customerId;
-    const gameId = req.query.gameId;
+    const { customerId, gameId, limit, offset } = req.query;
     let resultRentals = [];
 
     try {
         if (customerId) {
-            resultRentals = await connection.query(`SELECT * FROM rentals WHERE rentals."customerId" = $1 `, [customerId])
+            resultRentals = await connection.query(`
+                SELECT * FROM rentals 
+                WHERE rentals."customerId" = $1
+                ORDER BY id
+                LIMIT $2
+                OFFSET $3
+            
+            `, [customerId, limit ? limit : null, offset ? offset : null]);
         }
         else if (gameId) {
-            resultRentals = await connection.query(`SELECT * FROM rentals WHERE rentals."gameId" = $1 `, [gameId])
+            resultRentals = await connection.query(`
+                    SELECT * FROM rentals 
+                    WHERE rentals."gameId" = $1 
+                    ORDER BY id
+                    LIMIT $2
+                    OFFSET $3
+                `, [gameId, limit ? limit : null, offset ? offset : null]);
         }
         else {
-            resultRentals = await connection.query('SELECT * FROM rentals')
+            resultRentals = await connection.query(`
+                SELECT * FROM rentals 
+                ORDER BY id
+                LIMIT $1
+                OFFSET $2
+            `, [limit ? limit : null, offset ? offset : null])
         }
         const resultCustomers = await connection.query('SELECT customers.id, customers.name FROM customers')
         const resultGames = await connection.query(`

@@ -2,7 +2,7 @@ import connection from "../db.js";
 import joi from "joi";
 
 export async function getGames(req, res) {
-    const name = req.query.name;
+    const { name, limit, offset } = req.query;
     let capitalizedName = "";
     if (name) {
         capitalizedName = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
@@ -15,7 +15,10 @@ export async function getGames(req, res) {
                 FROM games
                 JOIN categories ON games."categoryId" = categories.id
                 WHERE games.name LIKE '${capitalizedName}%'
-                `);
+                ORDER BY games.id
+                LIMIT $1
+                OFFSET $2
+                `, [limit ? limit : null, offset ? offset : null]);
             res.send(games.rows);
         }
         else {
@@ -23,7 +26,10 @@ export async function getGames(req, res) {
                 SELECT games.*, categories.name as "categoryName"
                 FROM games
                 JOIN categories ON games."categoryId" = categories.id
-            `);
+                ORDER BY games.id
+                LIMIT $1
+                OFFSET $2
+            `, [limit ? limit : null, offset ? offset : null]);
             res.send(games.rows);
         }
     } catch {

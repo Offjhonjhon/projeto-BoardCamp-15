@@ -2,9 +2,18 @@ import connection from "../db.js";
 import joi from "joi";
 
 export async function getCategories(req, res) {
+    const { limit, offset } = req.query;
+
     try {
-        const categories = await connection.query('SELECT * FROM categories');
+        const categories = await connection.query(`
+                SELECT * FROM categories
+                ORDER BY id
+                LIMIT $1
+                OFFSET $2
+            `, [limit ? limit : null, offset ? offset : null]);
         res.send(categories.rows);
+
+
     } catch {
         res.status(500).send('Server Error');
     }
