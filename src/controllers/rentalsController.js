@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 
 
 export async function getRentals(req, res) {
-    const { customerId, gameId, limit, offset } = req.query;
+    const { customerId, gameId, limit, offset, order, desc } = req.query;
     let resultRentals = [];
 
     try {
@@ -12,7 +12,7 @@ export async function getRentals(req, res) {
             resultRentals = await connection.query(`
                 SELECT * FROM rentals 
                 WHERE rentals."customerId" = $1
-                ORDER BY id
+                ORDER BY ${order ? order : 'id'} ${desc === 'true' ? 'DESC' : 'ASC'}
                 LIMIT $2
                 OFFSET $3
             
@@ -22,7 +22,7 @@ export async function getRentals(req, res) {
             resultRentals = await connection.query(`
                     SELECT * FROM rentals 
                     WHERE rentals."gameId" = $1 
-                    ORDER BY id
+                    ORDER BY ${order ? order : 'id'} ${desc === 'true' ? 'DESC' : 'ASC'}
                     LIMIT $2
                     OFFSET $3
                 `, [gameId, limit ? limit : null, offset ? offset : null]);
@@ -30,7 +30,7 @@ export async function getRentals(req, res) {
         else {
             resultRentals = await connection.query(`
                 SELECT * FROM rentals 
-                ORDER BY id
+                ORDER BY ${order ? order : 'id'} ${desc === 'true' ? 'DESC' : 'ASC'}
                 LIMIT $1
                 OFFSET $2
             `, [limit ? limit : null, offset ? offset : null])

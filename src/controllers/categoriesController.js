@@ -2,12 +2,12 @@ import connection from "../db.js";
 import joi from "joi";
 
 export async function getCategories(req, res) {
-    const { limit, offset } = req.query;
+    const { limit, offset, order, desc } = req.query;
 
     try {
         const categories = await connection.query(`
                 SELECT * FROM categories
-                ORDER BY id
+                ORDER BY ${order ? order : 'id'} ${desc === 'true' ? 'DESC' : 'ASC'}
                 LIMIT $1
                 OFFSET $2
             `, [limit ? limit : null, offset ? offset : null]);

@@ -3,14 +3,14 @@ import joi from "joi";
 
 export async function getCustomers(req, res) {
     const cpf = req.query.cpf;
-    const { limit, offset } = req.query;
+    const { limit, offset, order, desc } = req.query;
 
     try {
         if (cpf) {
             const customers = await connection.query(`
                 SELECT * FROM customers 
                 WHERE customers.cpf LIKE '${cpf}%'
-                ORDER BY id
+                ORDER BY ${order ? order : 'id'} ${desc === 'true' ? 'DESC' : 'ASC'}
                 LIMIT $1
                 OFFSET $2
                 `, [limit ? limit : null, offset ? offset : null]);
@@ -19,7 +19,7 @@ export async function getCustomers(req, res) {
         else {
             const customers = await connection.query(`
                 SELECT * FROM customers
-                ORDER BY id
+                ORDER BY ${order ? order : 'id'} ${desc === 'true' ? 'DESC' : 'ASC'}
                 LIMIT $1
                 OFFSET $2
             `, [limit ? limit : null, offset ? offset : null]);
