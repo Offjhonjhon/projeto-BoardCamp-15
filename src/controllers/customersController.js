@@ -16,7 +16,7 @@ export async function getCustomers(req, res) {
             const customers = await connection.query(`
                 SELECT * FROM customers
             `);
-            console.log(customers.rows);
+
             res.send(customers.rows);
         }
     } catch {
@@ -66,7 +66,6 @@ export async function postCustomers(req, res) {
 }
 
 export async function updateCustomers(req, res) {
-    console.log(req.params.id)
 
     const schema = joi.object({
         name: joi.string().required(),
