@@ -1,6 +1,7 @@
+import connection from "../db.js";
+import joi from "joi";
 
-
-export default function getCustomers(req, res) {
+export async function getCustomers(req, res) {
     const cpf = req.query.cpf;
 
     try {
@@ -23,7 +24,7 @@ export default function getCustomers(req, res) {
     }
 }
 
-app.get("/customers/:id", async (req, res) => {
+export async function getCustomersById(req, res) {
     const id = req.params.id;
     try {
         const customer = await connection.query('SELECT * FROM customers WHERE id = $1', [id]);
@@ -32,9 +33,9 @@ app.get("/customers/:id", async (req, res) => {
     } catch {
         res.status(500).send('Server Error');
     }
-})
+}
 
-app.post("/customers", async (req, res) => {
+export async function postCustomers(req, res) {
 
     const schema = joi.object({
         name: joi.string().required(),
@@ -62,9 +63,9 @@ app.post("/customers", async (req, res) => {
         res.status(500).send('Server Error');
     }
 
-})
+}
 
-app.put("/customers/:id", async (req, res) => {
+export async function updateCustomers(req, res) {
     console.log(req.params.id)
 
     const schema = joi.object({
@@ -93,4 +94,4 @@ app.put("/customers/:id", async (req, res) => {
     } catch {
         res.status(500).send('Server Error');
     }
-})
+}
