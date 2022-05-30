@@ -73,5 +73,52 @@ export async function postRentals(req, res) {
     } catch {
         res.status(500).send('Server Error');
     }
+}
 
+export async function finalizeRental(req, res) {
+    const { id } = req.params;
+    let delayFee = 0;
+
+    try {
+        const rental = await connection.query('SELECT * FROM rentals WHERE id = $1', [id]);
+        const game = await connection.query('SELECT * FROM games WHERE id = $1', [rental.rows[0].gameId]);
+
+        const date = dayjs(new Date()).format("YYYY-MM-DD")
+        const lateDays = dayjs(date).diff(dayjs(rental.rows[0].rentDate, 'YYYY-MM-DD'), 'day');
+
+        if (rental.rows.length === 0) return res.status(400).send('Rental not found');
+        if (rental.rows[0].returnDate) return res.status(400).send('Rental already finalized');
+
+        if (lateDays > 0) {
+            delayFee = lateDays * game.rows[0].pricePerDay
+        }
+
+        await connection.query(`
+            INSERT INTO rentals("customerId","gameId","rentDate","daysRented","returnDate","originalPrice","delayFee")
+            VALUES ($1, $2, $3, $4, $5, $6, $7);
+        `, [rental.rows[0].customerId, rental.rows[0].gameId, rental.rows[0].rentDate, rental.rows[0].daysRented, date, rental.rows[0].daysRented * game.rows[0].pricePerDay, delayFee])
+
+        res.status(200).send('Rental updated')
+
+    } catch {
+        res.status(500).send('Server Error');
+    }
+}
+
+export async function deleteRental(req, res) {
+    const { id } = req.params;
+
+    try {
+        const rental = await connection.query('SELECT * FROM rentals WHERE id = $1', [id]);
+
+        if (rental.rows.length === 0) return res.status(400).send('Rental not found');
+        if (rental.rows[0].returnDate) return res.status(400).send('Rental already finalized');
+
+        await connection.query('DELETE FROM rentals WHERE id = $1', [id]);
+
+        res.status(200).send('Rental deleted')
+
+    } catch {
+        res.status(500).send('Server Error');
+    }
 }
